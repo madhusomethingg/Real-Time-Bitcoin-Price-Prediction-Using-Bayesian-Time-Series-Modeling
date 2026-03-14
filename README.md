@@ -1,28 +1,45 @@
-# Real-time Bitcoin Price Analysis Using PyMC3
+# 📈 Real-Time Bitcoin Price Analysis Using Bayesian Modeling
+### Uncertainty-Aware Forecasting in Volatile Financial Markets
 
-## Project Overview
+> Real-time Bitcoin price analysis powered by PyMC3 and MCMC inference — combining live data ingestion, probabilistic time series modeling, and interactive dashboards to forecast prices with quantified uncertainty.
 
-This project presents a real-time Bitcoin price analysis system utilizing PyMC3 for Bayesian statistical modeling. The system continuously fetches live Bitcoin price data, processes it, applies probabilistic time series models, and provides analytical insights through comprehensive visualizations. The aim is to enable uncertainty-aware forecasting in volatile financial markets.
+---
 
-## Key Features
+## 📌 Overview
 
-- Real-time Bitcoin price data acquisition and transformation
-- Bayesian modeling using PyMC3 and MCMC inference
-- Time series analysis and probabilistic forecasting
-- Interactive visualization and model diagnostics
-- Historical pattern recognition and automated price alert system
-- Integrated testing and evaluation for model performance
+Predicting cryptocurrency prices is hard. Predicting them *honestly* — with a clear sense of how uncertain those predictions are — is harder. Most forecasting systems give you a number. Bayesian models give you a distribution.
 
+This project builds a real-time Bitcoin analysis pipeline that continuously fetches live price data, fits probabilistic models using PyMC3, and surfaces uncertainty-aware forecasts through interactive visualizations.
 
+| Goal | Approach |
+|---|---|
+| How can we quantify uncertainty in volatile crypto markets? | Bayesian inference via PyMC3 + MCMC sampling |
+| How do we model price dynamics in real time? | Live data ingestion + trend/seasonal decomposition |
+| How do we make results interpretable? | Interactive dashboard with posterior predictive intervals |
 
-## Project Structure
+---
+
+## 🔧 Tech Stack
+
+| Category | Libraries / Tools |
+|----------|-----------|
+| Data Acquisition | `requests`, `websocket`, CoinGecko API |
+| Data Manipulation | `pandas`, `numpy` |
+| Bayesian Modeling | `pymc3`, `arviz` |
+| Visualization | `plotly`, `matplotlib` |
+| Infrastructure | `Docker`, `SQLite` |
+| Testing | `pytest` |
+
+---
+
+## 🗂️ Repository Structure
 
 ```
 📦 bitcoin-price-analysis
  ┣ 📂 src
  ┃ ┣ 📂 data
- ┃ ┃ ┣ 📜 data_fetcher.py      # Bitcoin price data acquisition
- ┃ ┃ ┣ 📜 data_processor.py    # Data cleaning and preprocessing
+ ┃ ┃ ┣ 📜 data_fetcher.py      # Live Bitcoin price acquisition
+ ┃ ┃ ┣ 📜 data_processor.py    # Cleaning and preprocessing
  ┃ ┃ ┗ 📜 database.py          # Database operations
  ┃ ┣ 📂 models
  ┃ ┃ ┣ 📜 bayesian_model.py    # PyMC3 model definitions
@@ -35,184 +52,113 @@ This project presents a real-time Bitcoin price analysis system utilizing PyMC3 
  ┃   ┣ 📜 config.py            # Configuration settings
  ┃   ┗ 📜 helpers.py           # Utility functions
  ┣ 📂 notebooks
- ┃ ┣ 📜 exploration.ipynb      # Data exploration
- ┃ ┗ 📜 analysis.ipynb         # Analysis notebooks
+ ┃ ┣ 📜 exploration.ipynb
+ ┃ ┗ 📜 analysis.ipynb
  ┣ 📂 tests
- ┃ ┣ 📜 test_data.py          # Data processing tests
- ┃ ┣ 📜 test_models.py         # Model tests
- ┃ ┗ 📜 test_utils.py          # Utility tests
- ┣ 📂 docs
- ┃ ┣ 📜 api.md                 # API documentation
- ┃ ┗ 📜 models.md              # Model documentation
- ┣ 📜 .env.example             # Environment variables template
- ┣ 📜 .gitignore              # Git ignore rules
- ┣ 📜 requirements.txt         # Project dependencies
- ┣ 📜 setup.py                # Package setup
- ┗ 📜 README.md               # Project documentation
+ ┃ ┣ 📜 test_data.py
+ ┃ ┣ 📜 test_models.py
+ ┃ ┗ 📜 test_utils.py
+ ┣ 📜 requirements.txt
+ ┣ 📜 .env.example
+ ┣ 📜 .gitignore
+ ┗ 📜 README.md
 ```
 
-## System Architecture
+---
 
-The system consists of real-time data ingestion modules, Bayesian modeling pipelines, and visualization layers. It supports both WebSocket and REST-based API connections for fetching market data and integrates real-time updates into the forecasting workflow.
+## 🔬 Methodology
 
-```mermaid
-graph TB
-    subgraph Data Layer
-        A[Bitcoin API] -->|Real-time Data| B[Data Fetcher]
-        B -->|Raw Data| C[Data Processor]
-        C -->|Processed Data| D[(Database)]
-    end
-    
-    subgraph Analysis Layer
-        D -->|Historical Data| E[PyMC3 Models]
-        D -->|Time Series| F[Time Series Analysis]
-        E -->|Model Results| G[Statistical Inference]
-        F -->|Predictions| G
-    end
-    
-    subgraph Presentation Layer
-        G -->|Analytics| H[Dashboard]
-        H -->|Visualizations| I[Web Interface]
-        H -->|Alerts| J[Notification System]
-    end
-```
+### 1. Data Collection & Preprocessing
+- Fetches live Bitcoin prices via CoinGecko API (REST polling + WebSocket streaming)
+- Cleans and validates raw data; structures it into time series using Pandas
+- Stores processed data in a local database for historical lookups
 
-## 📈 Data Flow
+### 2. Bayesian Modeling with PyMC3
 
-```mermaid
-sequenceDiagram
-    participant API as Bitcoin API
-    participant DF as Data Fetcher
-    participant DP as Data Processor
-    participant DB as Database
-    participant PM as PyMC3 Model
-    participant UI as Dashboard
-
-    API->>DF: Stream price data
-    DF->>DP: Raw data
-    DP->>DB: Processed data
-    DB->>PM: Historical data
-    PM->>PM: Bayesian inference
-    PM->>UI: Model results
-    UI->>UI: Update visualizations
-```
-
-## Technical Implementation
-
-### Data Collection
-- Uses public APIs (e.g., CoinGecko) to fetch Bitcoin prices.
-- Real-time updates via WebSocket or scheduled polling.
-- Data is cleaned, validated, and structured into time series using Pandas.
-
-### Statistical Modeling
-The project employs PyMC3 for sophisticated Bayesian modeling:
+The core of the project is a probabilistic model that treats price returns as draws from a distribution with unknown mean and volatility — both estimated from data using MCMC sampling.
 
 ```python
 import pymc3 as pm
 
 def create_price_model(data):
     with pm.Model() as model:
-        # Prior for volatility
-        σ = pm.HalfNormal('σ', sd=1)
-        
-        # Prior for mean return
-        μ = pm.Normal('μ', mu=0, sd=1)
-        
-        # Price change likelihood
+        σ = pm.HalfNormal('σ', sd=1)          # Prior for volatility
+        μ = pm.Normal('μ', mu=0, sd=1)         # Prior for mean return
         returns = pm.Normal('returns', mu=μ, sd=σ, observed=data)
-        
-        # Sampling
         trace = pm.sample(2000, tune=1000, return_inferencedata=False)
-    
     return model, trace
 ```
 
-### Time Series Components
+Rather than producing a single price forecast, this yields a **posterior distribution** — a range of plausible outcomes with associated probabilities. That's the key advantage over point-estimate models.
 
-```mermaid
-graph LR
-    A[Raw Price Data] --> B[Trend Component]
-    A --> C[Seasonal Component]
-    A --> D[Residual Component]
-    B --> E[Final Model]
-    C --> E
-    D --> E
-```
+### 3. Time Series Decomposition
 
-## Visualization Components
+Price data is decomposed into three components before modeling:
 
-The dashboard includes:
-1. Real-time price charts
-2. Bayesian inference plots
-3. Prediction intervals
-4. Model diagnostics
-5. Performance metrics
+| Component | What It Captures |
+|-----------|-----------------|
+| **Trend** | Long-term directional movement |
+| **Seasonal** | Recurring patterns (daily/weekly cycles) |
+| **Residual** | Noise and unexplained variation |
 
-## Prerequisites
-- Python 3.8+
-- PyMC3
-- Pandas
-- Plotly
-- NumPy
+### 4. Model Diagnostics
+- MCMC convergence checks (R-hat, effective sample size)
+- Prior and posterior predictive checks
+- Residual analysis and model comparison metrics
 
-### Installation
+---
+
+## 📊 Key Results
+
+- Successfully ingests and processes live Bitcoin price data in real time
+- PyMC3 posterior distributions provide calibrated uncertainty intervals around forecasts
+- Time series decomposition isolates trend and seasonal components from noise
+- Interactive dashboard displays real-time charts, Bayesian inference plots, and prediction intervals
+- Automated price alert system triggers on threshold crossings
+
+---
+
+## ⚠️ Limitations
+
+- Cryptocurrency markets are highly sensitive to external shocks (regulatory news, macro events) that no historical model can anticipate
+- MCMC sampling is computationally expensive — real-time inference requires tuning sample sizes carefully
+- The current model assumes stationarity in return distributions, which may not hold during high-volatility regimes
+
+---
+
+## 🔮 Future Work
+
+- **Regime detection** — use Hidden Markov Models to identify bull/bear market states and switch model parameters accordingly
+- **Hierarchical Bayesian models** — pool information across multiple cryptocurrencies to improve estimates in low-data regimes
+- **Online learning** — update posterior distributions incrementally as new data arrives, rather than resampling from scratch
+
+---
+
+## 🚀 Getting Started
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/bitcoin-price-analysis.git
+git clone https://github.com/madhusomethingg/bitcoin-price-analysis.git
 
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### Configuration
-1. Copy `.env.example` to `.env`
-2. Add your API keys and configuration settings
-3. Adjust model parameters in `config.py`
+1. Copy `.env.example` to `.env` and add your API keys
+2. Adjust model parameters in `src/utils/config.py`
+3. Run the notebook or launch the dashboard via `src/visualization/dashboard.py`
 
-## Usage Examples
+---
 
-```python
-from src.data.data_fetcher import BitcoinDataFetcher
-from src.models.bayesian_model import PriceModel
+## 👤 Author
 
-# Initialize data fetcher
-fetcher = BitcoinDataFetcher()
+Madhumitha Rajagopal
+---
 
-# Get real-time data
-data = fetcher.get_latest_prices()
+## 📄 License
 
-# Create and run model
-model = PriceModel(data)
-results = model.analyze()
-
-# Generate visualizations
-model.plot_results()
-```
-
-## Model Diagnostics
-
-The system includes comprehensive model diagnostics:
-- MCMC convergence checks
-- Prior and posterior predictive checks
-- Model comparison metrics
-- Residual analysis
-
-## Testing
-
-```bash
-# Run all tests
-pytest
-
-# Run specific test suite
-pytest tests/test_models.py
-```
-
-## Authors
-
-- Madhumitha Rajagopal
-
+This project is for educational and research purposes.
