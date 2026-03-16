@@ -5,7 +5,7 @@
 
 ---
 
-## 📌 Overview
+## 📌 Overview 
 
 Predicting cryptocurrency prices is hard. Predicting them *honestly* — with a clear sense of how uncertain those predictions are — is harder. Most forecasting systems give you a number. Bayesian models give you a distribution.
 
